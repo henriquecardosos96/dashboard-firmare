@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firmare · Dashboard Gerencial</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────── */
+:root {
+  --marrom:        #5C3317;
+  --marrom-med:    #7A4520;
+  --dourado:       #B8922A;
+  --dourado-claro: #D4AC5A;
+  --creme:         #F4EFE6;
+  --bege:          #E6DDD0;
+  --bege-escuro:   #CFC3B0;
+  --branco:        #FDFBF8;
+  --texto:         #2A1A0E;
+  --texto-suave:   #7A6555;
+  --verde:         #2E6B47;
+  --vermelho:      #9B2B2B;
+  --azul:          #2A4F72;
+  --sombra:        0 2px 12px rgba(92,51,23,.08);
+  --sombra-med:    0 6px 24px rgba(92,51,23,.12);
+  --radius:        10px;
+  --transition:    .2s ease;
+}
+
+/* ─── RESET ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--creme);
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── SIDEBAR ────────────────────────────────────────── */
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--marrom);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+
+.sidebar-logo {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-logo .marca {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+.sidebar-logo .sub {
+  font-size: .65rem;
+  color: var(--dourado-claro);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: .3rem;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 0;
+}
+.nav-label {
+  font-size: .6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  padding: 0 1.5rem;
+  margin-bottom: .5rem;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .65rem 1.5rem;
+  color: rgba(255,255,255,.55);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: .82rem;
+  font-weight: 400;
+  letter-spacing: .3px;
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { color: rgba(255,255,255,.85); background: rgba(255,255,255,.05); }
+.nav-item.active {
+  color: var(--dourado-claro);
+  border-left-color: var(--dourado);
+  background: rgba(184,146,42,.1);
+  font-weight: 500;
+}
+.nav-icon {
+  width: 16px; height: 16px;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-size: .7rem;
+  color: rgba(255,255,255,.25);
+  line-height: 1.5;
+}
+
+/* ─── MAIN ───────────────────────────────────────────── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────── */
+.topbar {
+  background: var(--branco);
+  border-bottom: 1px solid var(--bege);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-left { display: flex; align-items: center; gap: 1.5rem; }
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--marrom);
+  letter-spacing: .5px;
+}
+
+.select-wrapper { position: relative; }
+.select-wrapper select {
+  appearance: none;
+  background: var(--creme);
+  border: 1px solid var(--bege-escuro);
+  border-radius: 6px;
+  padding: .4rem 2rem .4rem .75rem;
+  font-family: 'Jost', sans-serif;
+  font-size: .78rem;
+  color: var(--texto);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.select-wrapper select:focus { outline: none; border-color: var(--dourado); }
+.select-wrapper::after {
+  content: '';
+  position: absolute; right: .6rem; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--texto-suave);
+  pointer-events: none;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.status-dot {
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .72rem; color: var(--texto-suave);
+}
+.dot-live {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--verde);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+.btn-refresh {
+  display: flex; align-items: center; gap: .4rem;
+  background: none; border: 1px solid var(--bege-escuro);
+  border-radius: 6px; padding: .4rem .75rem;
+  font-family: 'Jost', sans-serif; font-size: .75rem;
+  color: var(--texto-suave); cursor: pointer;
+  transition: var(--transition);
+}
+.btn-refresh:hover { border-color: var(--dourado); color: var(--marrom); }
+
+/* ─── CONTENT ────────────────────────────────────────── */
+.content { flex: 1; padding: 2rem; }
+
+/* ─── LOADING ────────────────────────────────────────── */
+.loading-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 400px; gap: 1rem;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 2px solid var(--bege);
+  border-top-color: var(--dourado);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: .82rem; color: var(--texto-suave); }
+
+/* ─── ERRO ───────────────────────────────────────────── */
+.error-box {
+  background: #FEF2F2; border: 1px solid #FECACA;
+  border-radius: var(--radius); padding: 1.5rem;
+  color: #991B1B; font-size: .85rem; line-height: 1.6;
+  max-width: 500px; margin: 2rem auto;
+}
+.error-box strong { display: block; margin-bottom: .5rem; }
+
+/* ─── PERÍODO BADGE ──────────────────────────────────── */
+.period-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+.period-badge {
+  font-size: .72rem; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--texto-suave);
+  background: var(--branco);
+  border: 1px solid var(--bege);
+  border-radius: 20px;
+  padding: .3rem .9rem;
+}
+.semana-nav { display: flex; align-items: center; gap: .5rem; }
+.semana-nav button {
+  background: none; border: 1px solid var(--bege-escuro);
+  border-radius: 6px; width: 28px; height: 28px;
+  cursor: pointer; color: var(--texto-suave);
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.semana-nav button:hover { border-color: var(--dourado); color: var(--marrom); }
+.semana-nav span { font-size: .78rem; color: var(--texto-suave); min-width: 140px; text-align: center; }
+
+/* ─── KPI GRID ───────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.kpi-card {
+  background: var(--branco);
+  border: 1px solid var(--bege);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  transition: var(--transition);
+}
+.kpi-card:hover { box-shadow: var(--sombra-med); }
+.kpi-label {
+  font-size: .68rem; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--texto-suave); margin-bottom: .5rem;
+}
+.kpi-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 600;
+  color: var(--marrom); line-height: 1;
+}
+.kpi-value.small { font-size: 1.5rem; }
+.kpi-sub {
+  font-size: .7rem; color: var(--texto-suave); margin-top: .3rem;
+}
+.kpi-change {
+  font-size: .72rem; font-weight: 500;
+  margin-top: .4rem; display: flex; align-items: center; gap: .3rem;
+}
+.kpi-change.up { color: var(--verde); }
+.kpi-change.down { color: var(--vermelho); }
+.kpi-change.neutral { color: var(--texto-suave); }
+
+/* DESTAQUE */
+.kpi-card.destaque {
+  background: var(--marrom);
+  border-color: var(--marrom);
+}
+.kpi-card.destaque .kpi-label { color: rgba(255,255,255,.5); }
+.kpi-card.destaque .kpi-value { color: var(--dourado-claro); }
+.kpi-card.destaque .kpi-sub { color: rgba(255,255,255,.4); }
+
+/* ─── PROGRESS BAR ───────────────────────────────────── */
+.progress-wrap { margin-bottom: 1.5rem; }
+.progress-card {
+  background: var(--branco);
+  border: 1px solid var(--bege);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.progress-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: .75rem;
+}
+.progress-title { font-size: .78rem; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 1px; }
+.progress-vals { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--marrom); }
+.progress-track {
+  height: 6px; background: var(--bege);
+  border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--marrom), var(--dourado));
+  transition: width .8s ease;
+}
+.progress-pct { font-size: .72rem; color: var(--texto-suave); margin-top: .5rem; text-align: right; }
+
+/* ─── CARDS GRID ─────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.cards-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 900px) {
+  .cards-grid, .cards-grid.three { grid-template-columns: 1fr; }
+}
+
+/* ─── CARD PADRÃO ────────────────────────────────────── */
+.card {
+  background: var(--branco);
+  border: 1px solid var(--bege);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+.card-title {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--texto-suave); margin-bottom: 1.1rem;
+  padding-bottom: .75rem; border-bottom: 1px solid var(--bege);
+}
+
+/* ─── FUNIL ──────────────────────────────────────────── */
+.funil { display: flex; flex-direction: column; gap: .4rem; }
+.funil-step {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .6rem 1rem;
+  border-radius: 6px;
+  font-size: .8rem; font-weight: 400;
+}
+.funil-step .funil-label { color: rgba(255,255,255,.85); }
+.funil-step .funil-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem; font-weight: 600; color: #fff;
+}
+.funil-connector {
+  width: 1px; height: 10px; background: var(--bege);
+  margin: 0 auto;
+}
+.taxa-row {
+  display: flex; justify-content: flex-end;
+  font-size: .7rem; color: var(--texto-suave); margin-top: .5rem;
+}
+
+/* ─── CRIATIVO CARD ──────────────────────────────────── */
+.criativo-card {
+  background: var(--creme);
+  border-radius: 8px; padding: 1.1rem;
+  margin-bottom: 1rem;
+}
+.criativo-link {
+  font-size: .75rem; color: var(--dourado);
+  text-decoration: none; word-break: break-all;
+  display: block; margin-bottom: .75rem;
+}
+.criativo-link:hover { color: var(--marrom); }
+.criativo-metrics {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: .5rem;
+}
+.criativo-metric { text-align: center; }
+.criativo-metric .val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem; font-weight: 600; color: var(--marrom);
+}
+.criativo-metric .lbl { font-size: .62rem; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ─── LISTA TOP5 ─────────────────────────────────────── */
+.top5-list { display: flex; flex-direction: column; gap: .4rem; }
+.top5-item {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .6rem .75rem;
+  border-radius: 6px;
+  font-size: .8rem;
+  background: var(--creme);
+}
+.top5-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; font-weight: 700; color: var(--dourado);
+  min-width: 18px; line-height: 1.4;
+}
+.top5-text { color: var(--texto); line-height: 1.5; }
+
+/* ─── ANÁLISE TEXTO ──────────────────────────────────── */
+.analise-box {
+  background: var(--creme);
+  border-left: 3px solid var(--dourado);
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 1.25rem;
+  font-size: .82rem; color: var(--texto);
+  line-height: 1.7;
+}
+
+/* ─── ORIGEM LEADS ───────────────────────────────────── */
+.origem-grid { display: flex; flex-direction: column; gap: .6rem; margin-top: .5rem; }
+.origem-item { display: flex; flex-direction: column; gap: .3rem; }
+.origem-header { display: flex; justify-content: space-between; font-size: .78rem; }
+.origem-label { color: var(--texto); }
+.origem-val { color: var(--marrom); font-weight: 500; }
+.origem-bar { height: 4px; background: var(--bege); border-radius: 99px; overflow: hidden; }
+.origem-fill { height: 100%; border-radius: 99px; background: var(--marrom); }
+
+/* ─── TRÁFEGO CAMPANHAS ──────────────────────────────── */
+.campanha-card {
+  background: var(--creme);
+  border-radius: 8px; padding: 1rem 1.1rem;
+  margin-bottom: .75rem;
+}
+.campanha-nome {
+  font-size: .72rem; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--texto-suave);
+  margin-bottom: .75rem;
+}
+.campanha-metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+}
+.c-metric .val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem; font-weight: 600; color: var(--marrom);
+}
+.c-metric .lbl { font-size: .62rem; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ─── EMPTY STATE ────────────────────────────────────── */
+.empty {
+  color: var(--bege-escuro); font-size: .82rem;
+  font-style: italic; padding: 1rem 0;
+}
+
+/* ─── MÓDULO HIDDEN ──────────────────────────────────── */
+.modulo { display: none; }
+.modulo.active { display: block; }
+
+/* ─── SEÇÃO TITLE ─────────────────────────────────────── */
+.section-row {
+  display: flex; align-items: center; gap: .75rem;
+  margin: 1.5rem 0 1rem;
+}
+.section-line {
+  flex: 1; height: 1px; background: var(--bege);
+}
+.section-label {
+  font-size: .65rem; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--bege-escuro);
+  white-space: nowrap;
+}
+
+/* ─── HISTÓRICO MINI BARS ────────────────────────────── */
+.mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; margin-top: .75rem; }
+.mini-bar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  background: var(--bege);
+  transition: background var(--transition);
+  cursor: default;
+  position: relative;
+}
+.mini-bar.current { background: var(--marrom); }
+.mini-bar:hover { background: var(--dourado-claro); }
+.mini-bar-label { font-size: .6rem; text-align: center; color: var(--texto-suave); margin-top: .3rem; }
+.mini-chart-wrap { display: flex; flex-direction: column; }
+.mini-bar-labels { display: flex; gap: 4px; margin-top: .2rem; }
+.mini-bar-labels span { flex: 1; font-size: .58rem; text-align: center; color: var(--texto-suave); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="marca">FIRMARE</div>
+      <div class="sub">Gestão Empresarial</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Módulos</div>
+      <div class="nav-item active" data-modulo="financeiro">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        Financeiro
+      </div>
+      <div class="nav-item" data-modulo="comercial">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Comercial
+      </div>
+      <div class="nav-item" data-modulo="marketing">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Marketing
+      </div>
+      <div class="nav-item" data-modulo="trafego">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Tráfego Pago
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      Firmare Gestão Empresarial<br>
+      @firmare.gestao
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="page-title" id="page-title">Financeiro</div>
+        <div class="select-wrapper">
+          <select id="select-cliente">
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-dot">
+          <div class="dot-live"></div>
+          <span id="status-txt">Conectando...</span>
+        </div>
+        <button class="btn-refresh" onclick="carregarDados()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Atualizar
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content" id="content">
+      <div class="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text">Carregando dados...</div>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────
+const SHEET_ID = '1fSgWk1_NkDzm8ynnboz3SGZKjJSBtfDWaXm8AulYDak';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+
+// ─── ESTADO ───────────────────────────────────────────────
+let todosRegistros = [];
+let clienteAtivo   = '';
+let semanaIdx      = 0;  // 0 = mais recente
+let moduloAtivo    = 'financeiro';
+
+// ─── MÓDULO TITLES ────────────────────────────────────────
+const TITULOS = {
+  financeiro: 'Financeiro',
+  comercial:  'Comercial',
+  marketing:  'Marketing & Posicionamento',
+  trafego:    'Tráfego Pago'
+};
+
+// ─── HELPERS ──────────────────────────────────────────────
+const fmt = {
+  brl: v => v ? `R$ ${parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}` : '—',
+  num: v => v ? parseFloat(v).toLocaleString('pt-BR') : '—',
+  pct: v => v ? `${parseFloat(v).toFixed(1)}%` : '—',
+  data: v => v ? v : '—',
+};
+function col(row, header, headers) {
+  const idx = headers.indexOf(header);
+  if (idx === -1) return '';
+  return (row[idx] || '').trim();
+}
+function safe(v) { return v && v !== 'null' && v !== '#N/A' ? v : ''; }
+
+// ─── PARSE CSV ────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === '\n' && !inQ) { lines.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  if (cur) lines.push(cur);
+
+  return lines.map(line => {
+    const cells = [];
+    let cell = '', q = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { q = !q; }
+      else if (c === ',' && !q) { cells.push(cell.trim()); cell = ''; }
+      else { cell += c; }
+    }
+    cells.push(cell.trim());
+    return cells;
+  });
+}
+
+// ─── CARREGAR DADOS ───────────────────────────────────────
+async function carregarDados() {
+  document.getElementById('status-txt').textContent = 'Atualizando...';
+  try {
+    const res = await fetch(`${SHEET_URL}&t=${Date.now()}`);
+    if (!res.ok) throw new Error('Erro HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) throw new Error('Planilha vazia');
+
+    const headers = rows[0].map(h => h.replace(/\r/g,''));
+    todosRegistros = rows.slice(1)
+      .filter(r => r.some(c => c.trim()))
+      .map(r => ({ _row: r, _headers: headers }));
+
+    // clientes únicos
+    const clientes = [...new Set(todosRegistros.map(r => col(r._row, 'Cliente', r._headers)).filter(Boolean))];
+    const sel = document.getElementById('select-cliente');
+    sel.innerHTML = clientes.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (!clienteAtivo || !clientes.includes(clienteAtivo)) clienteAtivo = clientes[0];
+    sel.value = clienteAtivo;
+
+    document.getElementById('status-txt').textContent = 'Dados atualizados';
+    semanaIdx = 0;
+    renderModulo();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('status-txt').textContent = 'Erro ao carregar';
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        <strong>Não foi possível carregar os dados.</strong>
+        Verifique se a planilha está publicada na web (Arquivo → Compartilhar → Publicar na web → CSV)
+        e se o ID está correto.<br><br><small>${e.message}</small>
+      </div>`;
+  }
+}
+
+// ─── FILTRAR REGISTROS DO CLIENTE ─────────────────────────
+function registrosDoCliente() {
+  return todosRegistros
+    .filter(r => col(r._row, 'Cliente', r._headers) === clienteAtivo)
+    .sort((a, b) => {
+      const da = new Date(col(a._row, 'Início da Semana (Data da segunda-feira)', a._headers).split('/').reverse().join('-'));
+      const db = new Date(col(b._row, 'Início da Semana (Data da segunda-feira)', b._headers).split('/').reverse().join('-'));
+      return db - da;
+    });
+}
+
+function get(r, campo) {
+  return safe(col(r._row, campo, r._headers));
+}
+
+// ─── RENDER MÓDULO ────────────────────────────────────────
+function renderModulo() {
+  const registros = registrosDoCliente();
+  if (!registros.length) {
+    document.getElementById('content').innerHTML = `<div class="empty" style="padding:3rem;text-align:center">Nenhum dado encontrado para este cliente.</div>`;
+    return;
+  }
+  semanaIdx = Math.min(semanaIdx, registros.length - 1);
+  const r = registros[semanaIdx];
+  const dataInicio = get(r, 'Início da Semana (Data da segunda-feira)');
+  const dataFim    = get(r, 'Fim da Semana (Data do domingo)');
+  const periodo    = dataInicio && dataFim ? `${dataInicio} — ${dataFim}` : dataInicio || '—';
+
+  // navegação de semana
+  const navHTML = `
+    <div class="period-bar">
+      <div class="period-badge">${clienteAtivo}</div>
+      <div class="semana-nav">
+        <button onclick="navegarSemana(1)" title="Semana anterior">&#8592;</button>
+        <span>${periodo}</span>
+        <button onclick="navegarSemana(-1)" title="Próxima semana" ${semanaIdx===0?'disabled style="opacity:.3"':''}>&#8594;</button>
+      </div>
+    </div>`;
+
+  const renders = {
+    financeiro: renderFinanceiro,
+    comercial:  renderComercial,
+    marketing:  renderMarketing,
+    trafego:    renderTrafego,
+  };
+
+  const html = navHTML + (renders[moduloAtivo]?.(r, registros) || '');
+  document.getElementById('content').innerHTML = html;
+}
+
+function navegarSemana(dir) {
+  const registros = registrosDoCliente();
+  semanaIdx = Math.max(0, Math.min(registros.length - 1, semanaIdx + dir));
+  renderModulo();
+}
+
+// ─── MINI CHART HELPER ────────────────────────────────────
+function miniChart(registros, campo, formatFn) {
+  const vals = registros.slice(0, 8).reverse(); // cronológico
+  const nums = vals.map(r => parseFloat(get(r, campo)) || 0);
+  const max = Math.max(...nums, 1);
+  const bars = nums.map((n, i) => {
+    const isCurrent = i === nums.length - 1 - semanaIdx;
+    const h = Math.max(8, Math.round((n / max) * 100));
+    return `<div class="mini-bar ${isCurrent?'current':''}" style="height:${h}%" title="${formatFn(n)}"></div>`;
+  }).join('');
+  const labels = vals.map((r,i) => {
+    const d = get(r, 'Início da Semana (Data da segunda-feira)');
+    return `<span>${d ? d.slice(0,5) : `S${i+1}`}</span>`;
+  }).join('');
+  return `<div class="mini-chart-wrap">
+    <div class="mini-chart">${bars}</div>
+    <div class="mini-bar-labels">${labels}</div>
+  </div>`;
+}
+
+// ─── FINANCEIRO ───────────────────────────────────────────
+function renderFinanceiro(r, registros) {
+  const receita    = get(r, 'Receita Bruta da Semana');
+  const despesas   = get(r, 'Despesas Totais da Semana');
+  const ticket     = get(r, 'Ticket Médio da Semana');
+  const acumulado  = get(r, 'Faturamento Acumulado (Mês)');
+  const meta       = get(r, 'Meta de Faturamento Mensal');
+  const top5       = get(r, 'Top 5 Vendas');
+  const resultado  = receita && despesas ? parseFloat(receita) - parseFloat(despesas) : null;
+  const pctMeta    = acumulado && meta ? Math.min(100, (parseFloat(acumulado)/parseFloat(meta)*100)) : null;
+
+  const top5HTML = top5
+    ? top5.split('\n').filter(Boolean).map((l,i) => `
+        <div class="top5-item">
+          <div class="top5-num">${i+1}</div>
+          <div class="top5-text">${l.trim()}</div>
+        </div>`).join('')
+    : '<div class="empty">Sem dados de procedimentos</div>';
+
+  return `
+    <div class="kpi-grid">
+      <div class="kpi-card destaque">
+        <div class="kpi-label">Receita Bruta</div>
+        <div class="kpi-value">${fmt.brl(receita)}</div>
+        <div class="kpi-sub">Semana atual</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Despesas</div>
+        <div class="kpi-value small">${fmt.brl(despesas)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Resultado Líquido</div>
+        <div class="kpi-value small">${resultado !== null ? fmt.brl(resultado) : '—'}</div>
+        ${resultado !== null ? `<div class="kpi-change ${resultado >= 0 ? 'up':'down'}">${resultado >= 0 ? '▲':'▼'} ${resultado >= 0?'Positivo':'Negativo'}</div>` : ''}
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ticket Médio</div>
+        <div class="kpi-value small">${fmt.brl(ticket)}</div>
+      </div>
+    </div>
+
+    ${acumulado && meta ? `
+    <div class="progress-wrap">
+      <div class="progress-card">
+        <div class="progress-header">
+          <div class="progress-title">Meta Mensal</div>
+          <div class="progress-vals">${fmt.brl(acumulado)} / ${fmt.brl(meta)}</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pctMeta}%"></div>
+        </div>
+        <div class="progress-pct">${pctMeta?.toFixed(1)}% atingido</div>
+      </div>
+    </div>` : ''}
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">Top Procedimentos</div>
+        <div class="top5-list">${top5HTML}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Histórico · Receita Semanal</div>
+        ${miniChart(registros, 'Receita Bruta da Semana', v => fmt.brl(v))}
+        <div style="margin-top:.75rem; font-size:.72rem; color:var(--texto-suave)">Barra escura = semana selecionada</div>
+      </div>
+    </div>`;
+}
+
+// ─── COMERCIAL ────────────────────────────────────────────
+function renderComercial(r, registros) {
+  const leads      = parseFloat(get(r, 'Total de Leads Recebidos (Semana)')) || 0;
+  const convertidos= parseFloat(get(r, 'Leads de Tráfego Convertidos (Venda Direta)')) || 0;
+  const recaptacao = parseFloat(get(r, 'Leads de Recaptação Convertidos (Base antiga)')) || 0;
+  const foraPerfil = parseFloat(get(r, 'Leads Fora de Perfil (Desqualificados)')) || 0;
+  const agendamentos= parseFloat(get(r, 'Agendamentos/Visitas Realizadas')) || 0;
+  const vendas     = parseFloat(get(r, 'Nº de Vendas Realizadas')) || 0;
+  const analise    = get(r, 'Análise Estratégica de Leads');
+  const taxaConv   = leads > 0 ? ((vendas / leads) * 100).toFixed(1) : null;
+  const qualificados = leads - foraPerfil;
+
+  // origens vêm de campos específicos se existirem
+  const leadsInsta = parseFloat(get(r, 'Leads Instagram')) || 0;
+  const leadsSite  = parseFloat(get(r, 'Leads Site')) || 0;
+  const totalOrigem = leadsInsta + leadsSite;
+
+  const funilSteps = [
+    { label: 'Leads Recebidos', val: leads, color: '#2A4F72' },
+    { label: 'Qualificados', val: qualificados, color: '#5C3317' },
+    { label: 'Agendamentos', val: agendamentos, color: '#7A4520' },
+    { label: 'Vendas', val: vendas, color: '#2E6B47' },
+  ];
+
+  const maxFunil = funilSteps[0].val || 1;
+  const funilHTML = funilSteps.map((s, i) => {
+    const w = Math.max(40, Math.round((s.val / maxFunil) * 100));
+    return `
+      ${i > 0 ? '<div class="funil-connector"></div>' : ''}
+      <div class="funil-step" style="background:${s.color}; width:${w}%; margin:0 auto">
+        <span class="funil-label">${s.label}</span>
+        <span class="funil-val">${s.val || '—'}</span>
+      </div>`;
+  }).join('');
+
+  const origemHTML = totalOrigem > 0 ? `
+    <div class="origem-grid">
+      <div class="origem-item">
+        <div class="origem-header"><span class="origem-label">Instagram</span><span class="origem-val">${leadsInsta}</span></div>
+        <div class="origem-bar"><div class="origem-fill" style="width:${(leadsInsta/totalOrigem*100).toFixed(0)}%; background:var(--dourado)"></div></div>
+      </div>
+      <div class="origem-item">
+        <div class="origem-header"><span class="origem-label">Site</span><span class="origem-val">${leadsSite}</span></div>
+        <div class="origem-bar"><div class="origem-fill" style="width:${(leadsSite/totalOrigem*100).toFixed(0)}%"></div></div>
+      </div>
+    </div>` : '<div class="empty">Sem dados de origem</div>';
+
+  return `
+    <div class="kpi-grid">
+      <div class="kpi-card destaque">
+        <div class="kpi-label">Leads Recebidos</div>
+        <div class="kpi-value">${leads || '—'}</div>
+        <div class="kpi-sub">Total da semana</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Agendamentos</div>
+        <div class="kpi-value small">${agendamentos || '—'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Vendas Realizadas</div>
+        <div class="kpi-value small">${vendas || '—'}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Taxa Lead → Venda</div>
+        <div class="kpi-value small">${taxaConv ? taxaConv + '%' : '—'}</div>
+        ${foraPerfil ? `<div class="kpi-sub">${foraPerfil} fora do perfil</div>` : ''}
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">Funil de Conversão</div>
+        <div class="funil">${funilHTML}</div>
+        ${recaptacao ? `<div class="taxa-row">+ ${recaptacao} via recaptação de base</div>` : ''}
+      </div>
+      <div class="card">
+        <div class="card-title">Origem dos Leads</div>
+        ${origemHTML}
+        ${analise ? `
+          <div class="section-row"><div class="section-line"></div><div class="section-label">Análise</div><div class="section-line"></div></div>
+          <div class="analise-box">${analise}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ─── MARKETING ────────────────────────────────────────────
+function renderMarketing(r, registros) {
+  const seguidores  = get(r, 'Novos Seguidores (Instagram)');
+  const criativos   = get(r, 'Quantidade de Criativos Publicados (Total da semana)');
+  const formato     = get(r, 'Formato Predominante (Vídeos, Cards ou Carrosséis)');
+  const link        = get(r, 'Link do Melhor Criativo (Performance)');
+  const views       = get(r, 'Visualizações (Melhor Criativo');
+  const curtidas    = get(r, 'Curtidas (Melhor Criativo)');
+  const comentarios = get(r, 'Comentários (Melhor Criativo)');
+  const compart     = get(r, 'Compartilhamentos (Melhor Criativo)');
+  const analise     = get(r, 'Análise Estratégica de Conteúdo');
+
+  const engajamento = [curtidas, comentarios, compart].reduce((s, v) => s + (parseFloat(v)||0), 0);
+
+  return `
+    <div class="kpi-grid">
+      <div class="kpi-card destaque">
+        <div class="kpi-label">Novos Seguidores</div>
+        <div class="kpi-value">${fmt.num(seguidores)}</div>
+        <div class="kpi-sub">No Instagram</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Criativos Publicados</div>
+        <div class="kpi-value small">${criativos || '—'}</div>
+        ${formato ? `<div class="kpi-sub">${formato}</div>` : ''}
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Engajamento Total</div>
+        <div class="kpi-value small">${engajamento || '—'}</div>
+        <div class="kpi-sub">Melhor criativo</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Visualizações</div>
+        <div class="kpi-value small">${fmt.num(views)}</div>
+        <div class="kpi-sub">Melhor criativo</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">Criativo Destaque da Semana</div>
+        <div class="criativo-card">
+          ${link ? `<a class="criativo-link" href="${link}" target="_blank" rel="noopener">${link}</a>` : '<div class="empty">Sem link</div>'}
+          <div class="criativo-metrics">
+            <div class="criativo-metric"><div class="val">${curtidas||'—'}</div><div class="lbl">Curtidas</div></div>
+            <div class="criativo-metric"><div class="val">${comentarios||'—'}</div><div class="lbl">Comentários</div></div>
+            <div class="criativo-metric"><div class="val">${compart||'—'}</div><div class="lbl">Compart.</div></div>
+            <div class="criativo-metric"><div class="val">${fmt.num(views)}</div><div class="lbl">Views</div></div>
+          </div>
+        </div>
+        ${analise ? `<div class="analise-box">${analise}</div>` : ''}
+      </div>
+      <div class="card">
+        <div class="card-title">Histórico · Novos Seguidores</div>
+        ${miniChart(registros, 'Novos Seguidores (Instagram)', v => v.toLocaleString('pt-BR'))}
+      </div>
+    </div>`;
+}
+
+// ─── TRÁFEGO PAGO ─────────────────────────────────────────
+function renderTrafego(r, registros) {
+  const campanhas  = get(r, 'Quantidade de Campanhas Ativas');
+  const investido  = get(r, 'Valor Total Investido (Semana)');
+  const cpl        = get(r, 'CPL Médio (Custo por Lead)');
+  const ctr        = get(r, 'CTR Médio (Taxa de Clique)');
+  const roas       = get(r, 'ROAS (Retorno sobre Investimento)');
+  const analise    = get(r, 'Análise Estratégica de Tráfego');
+
+  // dados extras que podem existir no Sheets
+  const invMensagem = get(r, 'Valor Investido Mensagem');
+  const leadsMsg    = get(r, 'Leads Campanha Mensagem');
+  const cplMsg      = get(r, 'CPL Campanha Mensagem');
+  const invVisita   = get(r, 'Valor Investido Visita Perfil');
+  const visitasPerf = get(r, 'Visitas Perfil');
+  const custoVisita = get(r, 'Custo por Visita');
+
+  const hasCampanhas = invMensagem || invVisita;
+
+  return `
+    <div class="kpi-grid">
+      <div class="kpi-card destaque">
+        <div class="kpi-label">Investimento Total</div>
+        <div class="kpi-value">${fmt.brl(investido)}</div>
+        <div class="kpi-sub">Na semana</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CPL Médio</div>
+        <div class="kpi-value small">${fmt.brl(cpl)}</div>
+        <div class="kpi-sub">Custo por lead</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CTR Médio</div>
+        <div class="kpi-value small">${ctr || '—'}</div>
+        <div class="kpi-sub">Taxa de clique</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">ROAS</div>
+        <div class="kpi-value small">${roas || '—'}</div>
+        <div class="kpi-sub">Retorno sobre invest.</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">Campanhas Ativas ${campanhas ? `(${campanhas})` : ''}</div>
+        ${hasCampanhas ? `
+          ${invMensagem ? `
+          <div class="campanha-card">
+            <div class="campanha-nome">Campanha de Mensagens</div>
+            <div class="campanha-metrics">
+              <div class="c-metric"><div class="val">${fmt.brl(invMensagem)}</div><div class="lbl">Investido</div></div>
+              <div class="c-metric"><div class="val">${leadsMsg||'—'}</div><div class="lbl">Leads</div></div>
+              <div class="c-metric"><div class="val">${fmt.brl(cplMsg)}</div><div class="lbl">CPL</div></div>
+            </div>
+          </div>` : ''}
+          ${invVisita ? `
+          <div class="campanha-card">
+            <div class="campanha-nome">Campanha de Visitas ao Perfil</div>
+            <div class="campanha-metrics">
+              <div class="c-metric"><div class="val">${fmt.brl(invVisita)}</div><div class="lbl">Investido</div></div>
+              <div class="c-metric"><div class="val">${fmt.num(visitasPerf)}</div><div class="lbl">Visitas</div></div>
+              <div class="c-metric"><div class="val">${fmt.brl(custoVisita)}</div><div class="lbl">Custo/visita</div></div>
+            </div>
+          </div>` : ''}
+        ` : '<div class="empty">Dados por campanha não disponíveis</div>'}
+        ${analise ? `<div class="analise-box" style="margin-top:.75rem">${analise}</div>` : ''}
+      </div>
+      <div class="card">
+        <div class="card-title">Histórico · Investimento Semanal</div>
+        ${miniChart(registros, 'Valor Total Investido (Semana)', v => fmt.brl(v))}
+      </div>
+    </div>`;
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    moduloAtivo = item.dataset.modulo;
+    document.getElementById('page-title').textContent = TITULOS[moduloAtivo];
+    semanaIdx = 0;
+    renderModulo();
+  });
+});
+
+document.getElementById('select-cliente').addEventListener('change', e => {
+  clienteAtivo = e.target.value;
+  semanaIdx = 0;
+  renderModulo();
+});
+
+// ─── INIT ─────────────────────────────────────────────────
+carregarDados();
+</script>
+</body>
+</html>
