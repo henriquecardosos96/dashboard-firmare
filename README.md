@@ -1,6 +1,7 @@
 # 📊 Firmare Dashboard — Gestão Empresarial
 
 > Dashboard semanal interativo para clientes da **Firmare Gestão Empresarial**, conectado ao Google Sheets como fonte de dados. Permite acompanhamento em tempo real de métricas financeiras, comerciais, de marketing e tráfego pago.
+> LINK: https://henriquecardosos96.github.io/dashboard-firmare/
 
 ---
 
