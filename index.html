@@ -306,6 +306,109 @@ body{font-family:'Inter',sans-serif;background:var(--fundo);color:var(--texto);f
   .cards-grid,.insights-grid{page-break-inside:avoid;}
 }
 
+
+/* ── MOBILE / RESPONSIVO ──────────────────────────────────── */
+@media(max-width:768px){
+  /* Sidebar vira drawer deslizante */
+  .sidebar{
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    z-index:300;
+    width:240px;
+  }
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  
+  /* Topbar compacta */
+  .topbar{padding:.7rem 1rem;flex-wrap:wrap;gap:.5rem;}
+  .topbar-left{flex-wrap:wrap;gap:.4rem;}
+  .page-title{font-size:.85rem;letter-spacing:1.5px;}
+  .ms-btn{min-width:130px;font-size:.72rem;}
+  .date-input{font-size:.72rem;padding:.35rem .6rem;}
+  .topbar-right{display:none;}
+
+  /* Overlay escuro quando sidebar aberta */
+  .sidebar-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:299;
+  }
+  .sidebar-overlay.open{display:block;}
+
+  /* Hamburger */
+  .hamburger{
+    display:flex !important;
+    flex-direction:column;
+    gap:4px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:.3rem;
+  }
+  .hamburger span{
+    width:20px;height:2px;
+    background:var(--texto);
+    border-radius:2px;
+    transition:.2s;
+  }
+
+  /* Content */
+  .content{padding:1rem;}
+
+  /* KPI grids → 2 colunas */
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  
+  /* Grids inline → coluna única */
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns:repeat(3,1fr)"],
+  [style*="grid-template-columns:1fr 1fr 1fr 1.8fr"],
+  [style*="grid-template-columns:repeat(5,1fr)"]{
+    grid-template-columns:repeat(2,1fr) !important;
+  }
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns:1fr 1.4fr"],
+  [style*="grid-template-columns:1fr 1fr;"],
+  .cards-grid{
+    grid-template-columns:1fr !important;
+  }
+  [style*="grid-template-columns:1fr 1.8fr"],
+  [style*="grid-template-columns:1.2fr 1fr"],
+  [style*="grid-template-columns:repeat(2,1fr)"]{
+    grid-template-columns:1fr !important;
+  }
+
+  /* KPI values um pouco menores */
+  .kpi-value{font-size:1.45rem;}
+  .kpi-value.sm{font-size:1.15rem;}
+
+  /* Cards de campanha */
+  .campanha-metrics{grid-template-columns:repeat(2,1fr);}
+
+  /* Criativo metrics */
+  .criativo-metrics{grid-template-columns:repeat(2,1fr);}
+
+  /* Período bar */
+  .period-bar{flex-direction:column;align-items:flex-start;}
+
+  /* Funil — manter centralizado */
+  .funil-wrap{width:100%;}
+  
+  /* Scroll horizontal em tabelas */
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+}
+
+@media(max-width:480px){
+  [style*="grid-template-columns:repeat(4,1fr)"],
+  [style*="grid-template-columns:repeat(3,1fr)"],
+  [style*="grid-template-columns:repeat(5,1fr)"]{
+    grid-template-columns:1fr 1fr !important;
+  }
+  .kpi-value{font-size:1.25rem;}
+}
+
+/* Hamburger hidden on desktop */
+.hamburger{display:none;}
 </style>
 </head>
 <body>
@@ -359,7 +462,7 @@ body{font-family:'Inter',sans-serif;background:var(--fundo);color:var(--texto);f
 
   <div class="main">
     <header class="topbar">
-      <div class="topbar-left">
+      <div class="topbar-left"><button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
 
         <div class="page-title" id="page-title">Financeiro</div>
         <div class="ms-wrap" id="ms-wrap">
@@ -404,6 +507,12 @@ let todosRegistros=[], clienteAtivo='', semanaIdx=0, moduloAtivo='financeiro';
 let clientesSelecionados = [];
 
 // ── MOBILE MENU ──────────────────────────────────────────
+function toggleSidebar(){
+  const s=document.getElementById('sidebar');
+  const o=document.getElementById('sidebar-overlay');
+  if(s){s.classList.toggle('open');}
+  if(o){o.classList.toggle('open');}
+}
 function toggleMenu(){
   const nav=document.getElementById('sidebar-nav');
   if(nav) nav.classList.toggle('open');
@@ -714,6 +823,26 @@ function lineChart(registros, campo, fmtFn){
 }
 
 // ── FINANCEIRO ────────────────────────────────────────────
+function dualBarChart(registros,campoA,campoB,labelA,labelB,fmtFn){
+  const _pts=registros.map(r=>{
+    const d=parseData(get(r,'Início da Semana (Data da segunda-feira)'));
+    return{d,a:parseNum(get(r,campoA)),b:parseNum(get(r,campoB))};
+  }).filter(p=>p.d&&(p.a!==null||p.b!==null)).sort((x,y)=>x.d-y.d).slice(-8);
+  if(!_pts.length) return '<div class="empty" style="padding:2rem;text-align:center">Sem dados históricos</div>';
+  const _allV=[..._pts.map(p=>p.a||0),..._pts.map(p=>p.b||0)];
+  const _maxV=Math.max(..._allV)||1;
+  const W=100/_pts.length;
+  const _bars=_pts.map((p,i)=>{
+    const hA=Math.max(2,Math.round(((p.a||0)/_maxV)*100));
+    const hB=Math.max(2,Math.round(((p.b||0)/_maxV)*100));
+    const lbl=p.d?p.d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';
+    const gap=0.4, bW=(W-gap*3)/2;
+    const xA=i*W+gap, xB=i*W+gap+bW+gap;
+    return `<rect x="${xA.toFixed(1)}%" y="${(100-hA).toFixed(1)}%" width="${bW.toFixed(1)}%" height="${hA}%" fill="var(--marrom)" rx="1.5" opacity=".85"/><rect x="${xB.toFixed(1)}%" y="${(100-hB).toFixed(1)}%" width="${bW.toFixed(1)}%" height="${hB}%" fill="var(--dourado)" rx="1.5" opacity=".85"/><text x="${(xA+bW).toFixed(1)}%" y="105%" text-anchor="middle" font-size="6.5" fill="#999">${lbl}</text>`;
+  }).join('');
+  const _leg=`<div style="display:flex;gap:1rem;margin-bottom:.4rem;font-size:.65rem;color:var(--texto-suave)"><span style="display:flex;align-items:center;gap:.3rem"><span style="width:9px;height:9px;border-radius:1.5px;background:var(--marrom);display:inline-block"></span>${labelA}</span><span style="display:flex;align-items:center;gap:.3rem"><span style="width:9px;height:9px;border-radius:1.5px;background:var(--dourado);display:inline-block"></span>${labelB}</span></div>`;
+  return _leg+`<div class="chart-area" style="height:140px"><svg class="chart-svg" viewBox="0 0 100 110" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">${_bars}</svg></div>`;
+}
 function dualLineChart(registros, campo1, campo2, cor1, cor2, label1, label2, fmtFn){
   const vals=registros.slice(0,8).reverse();
   const nums1=vals.map(r=>parseNum(get(r,campo1))||0);
@@ -756,6 +885,14 @@ function renderFinanceiro(r,rAnt,registros,_get=get){
   const rA=parseNum(receita), dA=parseNum(despesas);
   const resultado=rA!==null&&dA!==null?rA-dA:null;
   const roi=dA&&dA>0&&rA!==null?((rA-dA)/dA*100).toFixed(1):null;
+  // Ticket Médio: preferir campo direto; se vazio, calcular receita/vendas
+  const ticketCalc=(()=>{
+    const t=parseNum(ticket);
+    if(t!==null&&t>0) return t;
+    const v=parseNum(vendas);
+    if(rA!==null&&v!==null&&v>0) return rA/v;
+    return null;
+  })();
   const acumN=parseNum(acumulado), metaN=parseNum(meta);
   const pctMeta=acumN!==null&&metaN&&metaN>0?Math.min(100,(acumN/metaN*100)):null;
   const prev=rAnt||null;
@@ -773,40 +910,40 @@ function renderFinanceiro(r,rAnt,registros,_get=get){
   <!-- Fileira 1: 4 cards -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem;">
     <div class="kpi-card borda-marrom">
-      <div class="kpi-label">Receita Bruta</div>
+      <div class="kpi-label"><span style="margin-right:.3rem">💰</span>Receita Bruta</div>
       <div class="kpi-value">${fmt.brl(receita)}</div>
       ${prev?comparativo(receita,_get(prev,'Receita Bruta da Semana')):''}
     </div>
     <div class="kpi-card borda-marrom">
-      <div class="kpi-label">Despesas</div>
+      <div class="kpi-label"><span style="margin-right:.3rem">📤</span>Despesas</div>
       <div class="kpi-value sm">${fmt.brl(despesas)}</div>
       ${prev?comparativo(despesas,_get(prev,'Despesas Totais da Semana')):''}
     </div>
     <div class="kpi-card borda-marrom">
-      <div class="kpi-label">Resultado Líquido</div>
+      <div class="kpi-label"><span style="margin-right:.3rem">📊</span>Resultado Líquido</div>
       <div class="kpi-value sm">${resultado!==null?fmt.brl(resultado):'—'}</div>
       ${prev?comparativo(resultado,parseNum(_get(prev,'Receita Bruta da Semana'))-parseNum(_get(prev,'Despesas Totais da Semana'))):''}
     </div>
     <div class="kpi-card borda-marrom">
       <div class="kpi-label">Ticket Médio</div>
-      <div class="kpi-value sm">${fmt.brl(ticket)}</div>
-      ${prev?comparativo(ticket,_get(prev,'Ticket Médio da Semana')):''}
+      <div class="kpi-value sm">${ticketCalc!==null?fmt.brl(ticketCalc):'—'}</div>
+      ${prev?comparativo(ticketCalc,parseNum(_get(prev,'Ticket Médio da Semana'))||(() => { const rv=parseNum(_get(prev,'Receita Bruta da Semana')); const vv=parseNum(_get(prev,'Nº de Vendas Realizadas')); return rv&&vv&&vv>0?rv/vv:null; })()):''}
     </div>
   </div>
   <!-- Fileira 2: 3 cards + barra de meta -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1.8fr;gap:1rem;margin-bottom:1.5rem;align-items:stretch;">
     <div class="kpi-card borda-marrom">
-      <div class="kpi-label">Nº de Vendas</div>
+      <div class="kpi-label"><span style="margin-right:.3rem">🛒</span>Nº de Vendas</div>
       <div class="kpi-value sm">${vendas||'—'}</div>
       ${prev?comparativo(vendas,_get(prev,'Nº de Vendas Realizadas')):''}
     </div>
     <div class="kpi-card borda-marrom">
-      <div class="kpi-label">ROI</div>
+      <div class="kpi-label"><span style="margin-right:.3rem">📈</span>ROI</div>
       <div class="kpi-value sm">${roi!==null?roi+'%':'—'}</div>
       <div class="kpi-sub">Retorno sobre despesas</div>
     </div>
     <div class="kpi-card borda-marrom">
-      <div class="kpi-label">Faturamento Acumulado</div>
+      <div class="kpi-label"><span style="margin-right:.3rem">🗓️</span>Faturamento Acumulado</div>
       <div class="kpi-value sm">${fmt.brl(acumulado)}</div>
       <div class="kpi-sub">${meta?'Meta: '+fmt.brl(meta):'—'}</div>
     </div>
@@ -815,7 +952,7 @@ function renderFinanceiro(r,rAnt,registros,_get=get){
   <!-- Gráficos maiores -->
   <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1rem;margin-bottom:1.5rem;">
     <div class="card borda-marrom" style="min-height:280px"><div class="card-title">Top Vendas</div><div class="top5-list">${top5HTML}</div></div>
-    <div class="card borda-marrom" style="min-height:280px"><div class="card-title">Histórico · Receita vs Despesas</div>${dualLineChart(registros,'Receita Bruta da Semana','Despesas Totais da Semana','#5C3317','#C5A467','Receita','Despesas',v=>fmt.brl(v))}</div>
+    <div class="card borda-marrom" style="min-height:280px"><div class="card-title">Histórico · Receita vs Despesas</div>${dualBarChart(registros,'Receita Bruta da Semana','Despesas Totais da Semana','Receita','Despesas',v=>fmt.brl(v))}</div>
   </div>`;
 }
 
@@ -840,31 +977,39 @@ function renderComercial(r,rAnt,registros,_get=get){
   const prev=rAnt||null;
 
   const steps=[
-    {label:'Leads Recebidos', val:lN,   color:'#5C3317'},
-    {label:'Qualificados',    val:qual,  color:'#7A4520'},
-    {label:'Agendamentos',    val:aN,    color:'#A0622A'},
-    {label:'Vendas',          val:vN,    color:'#C5A467'},
+    {label:'Leads Recebidos', val:lN,   color:'#5C3317', icon:'📥'},
+    {label:'Qualificados',    val:qual,  color:'#7A4520', icon:'✅'},
+    {label:'Agendamentos',    val:aN,    color:'#A0622A', icon:'📅'},
+    {label:'Vendas',          val:vN,    color:'#C5A467', icon:'🏆'},
   ];
   const maxV=steps[0].val||1;
   const funilHTML=steps.map((s,i)=>{
-    const pct=Math.max(35,Math.round((s.val/maxV)*100));
+    // Largura: escala de 100% até 52%, cada nível perde 16%
+    const widths=[100,82,68,54];
+    const pct=widths[i]||Math.max(50,100-(i*16));
     const prev_val=i>0?steps[i-1].val:null;
     const taxa=prev_val&&prev_val>0?((s.val/prev_val)*100).toFixed(0)+'%':null;
-    const clip=i===0?'polygon(0 0,100% 0,96% 100%,4% 100%)':i===steps.length-1?'polygon(4% 0,96% 0,90% 100%,10% 100%)':'polygon(2% 0,98% 0,96% 100%,4% 100%)';
+    // Clip progressivo: cada nível corta mais as bordas
+    const cuts=[[0,4],[3,7],[5,10],[8,14]];
+    const [tl,bl]=cuts[i]||[0,4];
+    const clip=`polygon(${tl}% 0,${100-tl}% 0,${100-bl}% 100%,${bl}% 100%)`;
     return `
-      ${i>0?`<div class="funil-connector" style="height:28px"><div class="funil-conn-line"></div>${taxa?`<div class="funil-taxa-badge">↓ ${taxa}</div>`:''}</div>`:''}
-      <div style="width:${pct}%;background:${s.color};clip-path:${clip};padding:.7rem 1.4rem;display:flex;justify-content:space-between;align-items:center;border-radius:2px;">
-        <span style="font-size:.72rem;color:rgba(255,255,255,.85);font-weight:500;letter-spacing:.3px">${s.label}</span>
-        <span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:#fff">${s.val||'—'}</span>
+      ${i>0?`<div class="funil-connector" style="height:20px;width:100%;display:flex;justify-content:center;align-items:center;position:relative"><div style="width:2px;height:100%;background:rgba(92,51,23,.2)"></div>${taxa?`<div class="funil-taxa-badge" style="position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:#fff;border:1px solid var(--bege);border-radius:20px;padding:.12rem .55rem;font-size:.62rem;font-weight:700;color:var(--marrom)">↓ ${taxa}</div>`:''}</div>`:''}
+      <div style="width:${pct}%;background:${s.color};clip-path:${clip};padding:.65rem 1.2rem;display:flex;justify-content:space-between;align-items:center;border-radius:3px;box-shadow:0 2px 6px rgba(0,0,0,.12);">
+        <span style="font-size:.7rem;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.4px">${s.label}</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:1.4rem;font-weight:800;color:#fff">${s.val!==null&&s.val!==undefined?s.val:'—'}</span>
       </div>`;
   }).join('');
 
   // Card canal helper
-  function cardCanal(label, val, prevVal){
+  function cardCanal(label, val, prevVal, totalVal, convLabel){
     const n=parseNum(val);
+    const tot=parseNum(totalVal);
+    const taxa=tot&&tot>0&&n!==null?((n/tot)*100).toFixed(0)+'%':null;
     return `<div class="kpi-card borda-marrom">
       <div class="kpi-label" style="font-size:.6rem">${label}</div>
       <div class="kpi-value sm">${n!==null?n:'—'}</div>
+      ${taxa?`<div class="kpi-sub">${taxa} ${convLabel||'de conversão'}</div>`:''}
       ${prev&&prevVal!==null?comparativo(val,prevVal):''}
     </div>`;
   }
@@ -892,10 +1037,10 @@ function renderComercial(r,rAnt,registros,_get=get){
   </div>
   <!-- Linha 2: 5 cards por canal -->
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.5rem;">
-    ${cardCanal('Leads Recebidos Instagram', lInsta, prev?_get(prev,'Leads Recebidos Instagram'):null)}
-    ${cardCanal('Leads Recebidos WhatsApp',  lWhats, prev?_get(prev,'Leads Recebidos WhatsApp'):null)}
-    ${cardCanal('Leads Convertidos Instagram', cInsta, prev?_get(prev,'Leads Convertidos Instagram'):null)}
-    ${cardCanal('Leads Convertidos WhatsApp',  cWhats, prev?_get(prev,'Leads Convertidos WhatsApp'):null)}
+    ${cardCanal('Recebidos · Instagram', lInsta, prev?_get(prev,'Leads Recebidos Instagram'):null)}
+    ${cardCanal('Recebidos · WhatsApp',  lWhats, prev?_get(prev,'Leads Recebidos WhatsApp'):null)}
+    ${cardCanal('Convertidos · Instagram', cInsta, prev?_get(prev,'Leads Convertidos Instagram'):null, lInsta, 'conv.')}
+    ${cardCanal('Convertidos · WhatsApp',  cWhats, prev?_get(prev,'Leads Convertidos WhatsApp'):null, lWhats, 'conv.')}
     ${cardCanal('Leads de Recaptação', recap, prev?_get(prev,'Leads de Recaptação Convertidos (Base antiga)'):null)}
   </div>
   <!-- Funil + Histórico -->
@@ -928,13 +1073,16 @@ function renderMarketing(r,rAnt,registros,_get=get){
   const coment=get(r,'Comentários (Melhor Criativo)');
   const compart=get(r,'Compartilhamentos (Melhor Criativo)');
   const analise=get(r,'Análise Estratégica de Conteúdo');
-  const eng=(parseNum(curt)||0)+(parseNum(coment)||0)+(parseNum(compart)||0);
+  const _curt=parseNum(curt)||0, _coment=parseNum(coment)||0;
+  const _segN=parseNum(seg)||0;
+  const eng = _segN>0 ? ((_curt+_coment)/_segN*100).toFixed(1) : (_curt+_coment)||'—';
+  const engLabel = _segN>0 ? eng+'%' : String(eng);
   const prev=rAnt||null;
   return `
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
     <div class="kpi-card borda-marrom"><div class="kpi-label">Novos Seguidores</div><div class="kpi-value">${fmt.num(seg)}</div>${prev?comparativo(seg,get(prev,'Novos Seguidores (Instagram)')):''}</div>
     <div class="kpi-card borda-marrom"><div class="kpi-label">Criativos Publicados</div><div class="kpi-value sm">${cria||'—'}</div>${fmt_?`<div class="kpi-sub">${fmt_}</div>`:''}</div>
-    <div class="kpi-card borda-marrom"><div class="kpi-label">Engajamento Total</div><div class="kpi-value sm">${eng||'—'}</div><div class="kpi-sub">Melhor criativo</div></div>
+    <div class="kpi-card borda-marrom"><div class="kpi-label">Engajamento</div><div class="kpi-value sm">${engLabel}</div><div class="kpi-sub">(Curtidas+Coment.) ÷ Seguidores</div></div>
     <div class="kpi-card borda-marrom"><div class="kpi-label">Visualizações</div><div class="kpi-value sm">${fmt.num(views)}</div><div class="kpi-sub">Melhor criativo</div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
@@ -970,7 +1118,14 @@ function renderTrafego(r,rAnt,registros,_get=get){
   const inv=get(r,'Valor Total Investido (Semana)');
   const cpl=get(r,'CPL Médio (Custo por Lead)');
   const ctr=get(r,'CTR Médio (Taxa de Clique)');
-  const roas=get(r,'ROAS (Retorno sobre Investimento)');
+  const _roasRaw=get(r,'ROAS (Retorno sobre Investimento)');
+  // Recalcular ROAS pela fórmula: (Receita - Investimento) / Investimento
+  const _invN=parseNum(inv), _recN=parseNum(_get(r,'Receita Bruta da Semana'));
+  const roas=(()=>{
+    if(_recN!==null&&_invN!==null&&_invN>0) return ((_recN-_invN)/_invN*100).toFixed(1)+'%';
+    const rv=parseNum(_roasRaw);
+    return rv!==null?rv.toFixed(1):'—';
+  })();
   const camp=get(r,'Quantidade de Campanhas Ativas');
   const analise=get(r,'Análise Estratégica de Tráfego');
   const invMsg=get(r,'Valor Investido Mensagem');
@@ -981,17 +1136,17 @@ function renderTrafego(r,rAnt,registros,_get=get){
   const custoVis=get(r,'Custo por Visita');
   return `
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
-    <div class="kpi-card borda-marrom"><div class="kpi-label">Investimento Total</div><div class="kpi-value">${fmt.brl(inv)}</div><div class="kpi-sub">Na semana</div></div>
-    <div class="kpi-card borda-marrom"><div class="kpi-label">CPL Médio</div><div class="kpi-value sm">${fmt.brl(cpl)}</div><div class="kpi-sub">Custo por lead</div></div>
-    <div class="kpi-card borda-marrom"><div class="kpi-label">CTR</div><div class="kpi-value sm">${ctr||'—'}</div><div class="kpi-sub">Taxa de clique</div></div>
-    <div class="kpi-card borda-marrom"><div class="kpi-label">ROAS</div><div class="kpi-value sm">${roas||'—'}</div><div class="kpi-sub">Retorno sobre invest.</div></div>
+    <div class="kpi-card borda-marrom"><div class="kpi-label"><span style="margin-right:.3rem">💸</span>Investimento Total</div><div class="kpi-value">${fmt.brl(inv)}</div><div class="kpi-sub">Na semana</div></div>
+    <div class="kpi-card borda-marrom"><div class="kpi-label"><span style="margin-right:.3rem">🎯</span>CPL Médio</div><div class="kpi-value sm">${fmt.brl(cpl)}</div><div class="kpi-sub">Custo por lead</div></div>
+    <div class="kpi-card borda-marrom"><div class="kpi-label">CTR</div><div class="kpi-value sm">${(()=>{ const n=parseNum(ctr); return n!==null?(n<1?(n*100).toFixed(1)+'%':n.toFixed(1)+'%'):'—'; })()}</div><div class="kpi-sub">Taxa de clique</div></div>
+    <div class="kpi-card borda-marrom"><div class="kpi-label">ROAS</div><div class="kpi-value sm">${roas||'—'}</div><div class="kpi-sub">(Receita−Invest.) ÷ Invest.</div></div>
   </div>
   <div class="cards-grid">
     <div class="card borda-marrom"><div class="card-title">Campanhas ${camp?'('+camp+')':''}</div>
       ${invMsg?`<div class="campanha-card"><div class="campanha-nome">Campanha de Mensagens</div><div class="campanha-metrics"><div><div class="cm2-val">${fmt.brl(invMsg)}</div><div class="cm2-lbl">Investido</div></div><div><div class="cm2-val">${leadsMsg||'—'}</div><div class="cm2-lbl">Leads</div></div><div><div class="cm2-val">${fmt.brl(cplMsg)}</div><div class="cm2-lbl">CPL</div></div></div></div>`:''}
       ${invVis?`<div class="campanha-card"><div class="campanha-nome">Visitas ao Perfil</div><div class="campanha-metrics"><div><div class="cm2-val">${fmt.brl(invVis)}</div><div class="cm2-lbl">Investido</div></div><div><div class="cm2-val">${fmt.num(visitas)}</div><div class="cm2-lbl">Visitas</div></div><div><div class="cm2-val">${fmt.brl(custoVis)}</div><div class="cm2-lbl">Custo/vis.</div></div></div></div>`:''}
       ${!invMsg&&!invVis?'<div class="empty">Adicione colunas por campanha na planilha</div>':''}
-      ${analise?`<div class="analise-box" style="margin-top:.75rem">${analise}</div>`:''}
+      ${analise?`<div class="analise-box" style="margin-top:.75rem"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dourado);margin-bottom:.35rem">Análise Estratégica</div>${analise}</div>`:''}
     </div>
     <div class="card borda-marrom"><div class="card-title">Histórico · Investimento Semanal</div>${lineChart(registros,'Valor Total Investido (Semana)',v=>fmt.brl(v))}</div>
   </div>`;
