@@ -763,7 +763,8 @@ document.addEventListener('click',e=>{
 // ── RENDER MODULO ─────────────────────────────────────────
 function renderModulo(){
   const registros=registrosFiltrados();
-  const content=document.getElementById('content');
+  const mainEl=document.getElementById('content');
+  if(!mainEl) return;
 
   // Agrupar por semana
   const semanas=[], semanaMap={};
@@ -774,7 +775,7 @@ function renderModulo(){
   });
   semanas.sort((a,b)=>(parseData(b)||0)-(parseData(a)||0));
   if(!semanas.length){
-    content.innerHTML='<div class="empty-state">Nenhum dado para os filtros selecionados.</div>';
+    mainEl.innerHTML='<div class="empty-state">Nenhum dado para os filtros selecionados.</div>';
     return;
   }
   semanaIdx=Math.min(semanaIdx,semanas.length-1);
@@ -821,7 +822,7 @@ function renderModulo(){
   </div>`;
 
   if(moduloAtivo==='insights'){
-    content.innerHTML=navHTML+`<div class="insights-header">Insights de Mídia</div>
+    mainEl.innerHTML=navHTML+`<div class="insights-header">Insights de Mídia</div>
       <div class="insights-sub">Gerados automaticamente com base nos dados do período selecionado.</div>
       <div class="insights-grid" id="insights-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;"></div>`;
     gerarInsightsIA(r,rAnt,registrosConsolidados,_get);
@@ -829,7 +830,13 @@ function renderModulo(){
   }
 
   const renders={financeiro:renderFinanceiro,comercial:renderComercial,marketing:renderMarketing,trafego:renderTrafego};
-  content.innerHTML=navHTML+(renders[moduloAtivo]?.(r,rAnt,registrosConsolidados,todosConsolidados,_get)||'');
+  try{
+    const html=renders[moduloAtivo]?.(r,rAnt,registrosConsolidados,todosConsolidados,_get)||'';
+    mainEl.innerHTML=navHTML+html;
+  } catch(e){
+    console.error('Erro ao renderizar módulo:',e);
+    mainEl.innerHTML=navHTML+`<div class="error-box"><strong>Erro ao carregar módulo.</strong><br><small>${e.message}</small></div>`;
+  }
 }
 
 function navegarSemana(dir){
