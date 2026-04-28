@@ -862,8 +862,8 @@ function svgLine(regs,campo,fmtFn,_getFn,color='#5C3317',dash=''){
   }).join('');
   const dots=coords.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="${i===coords.length-1-semanaIdx?4:2.5}" fill="${color}" opacity="${i===coords.length-1-semanaIdx?1:.65}"><title>${fmtFn(p.v)}</title></circle>`).join('');
   return `<div class="chart-wrap"><svg viewBox="0 0 ${W} ${H+20}" width="100%" preserveAspectRatio="none" overflow="visible">
-    <defs><linearGradient id="gr_${campo.slice(0,6).replace(/\W/g,'')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".15"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
-    <path d="${area}" fill="url(#gr_${campo.slice(0,6).replace(/\W/g,'')})"/>
+    <defs><linearGradient id="grLine" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".15"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#grLine)"/>
     <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-dasharray="${dash}" stroke-linejoin="round" stroke-linecap="round"/>
     ${dots}${labels}
   </svg></div>`;
