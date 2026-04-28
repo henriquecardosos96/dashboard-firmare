@@ -805,15 +805,17 @@ function renderModulo(){
       <button onclick="navegarSemana(-1)" title="Semana mais recente" ${semanaIdx===0?'disabled':''}> &#8594;</button>
     </div>
   </div>`;
+  // Registros consolidados por semana para os charts históricos
+  const registrosConsolidados = semanas.map(k => consolidar(semanaMap[k]));
   const syncRenders={financeiro:renderFinanceiro,comercial:renderComercial,marketing:renderMarketing,trafego:renderTrafego};
   if(moduloAtivo==='insights'){
     document.getElementById('content').innerHTML=nav+`
       <div class="insights-header">Insights de Mídia</div>
       <div class="insights-sub">Gerados automaticamente com base nos dados do período selecionado.</div>
       <div class="insights-grid" id="insights-grid"></div>`;
-    gerarInsightsIA(r,rAnt,registros,_get);
+    gerarInsightsIA(r,rAnt,registrosConsolidados,_get);
   } else {
-    document.getElementById('content').innerHTML=nav+(syncRenders[moduloAtivo]?.(r,rAnt,registros,_get)||'');
+    document.getElementById('content').innerHTML=nav+(syncRenders[moduloAtivo]?.(r,rAnt,registrosConsolidados,_get)||'');
   }
 }
 
@@ -865,10 +867,10 @@ function dualBarChart(registros,campoA,campoB,labelA,labelB,fmtFn,_getFn=get){
     const lbl=p.d?p.d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';
     const gap=0.4, bW=(W-gap*3)/2;
     const xA=i*W+gap, xB=i*W+gap+bW+gap;
-    return `<rect x="${xA.toFixed(1)}%" y="${(100-hA).toFixed(1)}%" width="${bW.toFixed(1)}%" height="${hA}%" fill="var(--marrom)" rx="1.5" opacity=".85"/><rect x="${xB.toFixed(1)}%" y="${(100-hB).toFixed(1)}%" width="${bW.toFixed(1)}%" height="${hB}%" fill="var(--dourado)" rx="1.5" opacity=".85"/><text x="${(xA+bW).toFixed(1)}%" y="105%" text-anchor="middle" font-size="6.5" fill="#999">${lbl}</text>`;
+    return `<rect x="${xA.toFixed(1)}%" y="${(100-hA).toFixed(1)}%" width="${bW.toFixed(1)}%" height="${hA}%" fill="var(--marrom)" rx="1.5" opacity=".85"/><rect x="${xB.toFixed(1)}%" y="${(100-hB).toFixed(1)}%" width="${bW.toFixed(1)}%" height="${hB}%" fill="var(--dourado)" rx="1.5" opacity=".85"/><text x="${(xA+bW).toFixed(1)}%" y="108%" text-anchor="end" font-size="7" fill="#7A6555" transform="rotate(-40,${(xA+bW).toFixed(1)}% 108%)">${lbl}</text>`;
   }).join('');
   const _leg=`<div style="display:flex;gap:1rem;margin-bottom:.4rem;font-size:.65rem;color:var(--texto-suave)"><span style="display:flex;align-items:center;gap:.3rem"><span style="width:9px;height:9px;border-radius:1.5px;background:var(--marrom);display:inline-block"></span>${labelA}</span><span style="display:flex;align-items:center;gap:.3rem"><span style="width:9px;height:9px;border-radius:1.5px;background:var(--dourado);display:inline-block"></span>${labelB}</span></div>`;
-  return _leg+`<div class="chart-area" style="height:140px"><svg class="chart-svg" viewBox="0 0 100 110" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">${_bars}</svg></div>`;
+  return _leg+`<div class="chart-area" style="height:155px"><svg class="chart-svg" viewBox="0 0 100 125" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">${_bars}</svg></div>`;
 }
 function dualLineChart(registros, campo1, campo2, cor1, cor2, label1, label2, fmtFn){
   const vals=registros.slice(0,8).reverse();
