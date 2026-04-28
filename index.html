@@ -1376,17 +1376,6 @@ async function downloadPDF(){
 // ── INIT ──────────────────────────────────────────────────
 // Login handled by early script above
 if(window._loginOk){ carregarDados(); window._loginOk=false; }
-
-Selecionados.length===1?clientesSelecionados[0]:`${clientesSelecionados.length} clientes`;
-  document.getElementById('ms-btn').textContent=label;
-  semanaIdx=0;
-  renderModulo();
-}
-document.getElementById('date-from').addEventListener('change',()=>{semanaIdx=0;renderModulo();});
-document.getElementById('date-to').addEventListener('change',()=>{semanaIdx=0;renderModulo();});
-
-// render insights pode retornar promise
-const _origRenderModulo=renderModulo;
 </script>
 
 </body>
