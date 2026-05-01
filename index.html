@@ -585,11 +585,23 @@ function c(row, idx) {
 function num(v) {
   if (v === null || v === undefined || v === '') return null;
   if (typeof v === 'number') return isNaN(v) ? null : v;
-  let s = String(v).trim()
-    .replace(/R\$\s*/g, '')
-    .replace(/\s/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
+  let s = String(v).trim();
+  // Se já é número JS (ponto decimal, sem vírgula), retornar direto
+  if (/^-?\d+\.\d+$/.test(s) || /^-?\d+$/.test(s)) return parseFloat(s);
+  // Formato brasileiro: R$ 82.193,88 → remove R$, pontos de milhar, troca vírgula
+  s = s.replace(/R\$\s*/g, '')
+       .replace(/\s/g, '');
+  // Se tem vírgula (formato pt-BR): pontos são milhar
+  if (s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  }
+  // Se não tem vírgula mas tem ponto: pode ser decimal (ex: "82193.88") ou milhar (ex: "82.193")
+  // Heurística: se só tem 3 dígitos após o ponto → milhar; senão → decimal
+  else if (s.includes('.')) {
+    const parts = s.split('.');
+    if (parts[parts.length-1].length === 3) s = s.replace(/\./g, ''); // milhar
+    // else: ponto decimal, manter como está
+  }
   const n = parseFloat(s);
   return isNaN(n) ? null : n;
 }
