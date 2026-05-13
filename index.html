@@ -872,7 +872,7 @@ function consolidar(rows) {
     C.COMPARTILHAMENTOS,C.ALCANCE,C.LEADS,C.LEADS_TRAFEGO,C.LEADS_RECAP,
     C.LEADS_FORA,C.LEADS_INSTA,C.LEADS_WHATS,C.CONV_WHATS,C.CONV_INSTA,
     C.AGENDAMENTOS,C.VENDAS,C.VENDAS_TOTAL,C.CAMPANHAS,C.INVESTIMENTO,
-    C.RECEITA,C.DESPESAS,C.ACUMULADO,C.META];
+    C.RECEITA,C.DESPESAS];
   const MEDIA = [C.TICKET,C.CPL,C.CTR];
   const merged = [...rows[0]]; // cópia da primeira linha
   SOMA.forEach(idx => {
@@ -891,6 +891,16 @@ function consolidar(rows) {
       if (v && v !== 'nan') { merged[idx] = v; break; }
     }
   });
+
+  // ACUMULADO e META: pegar o registro mais recente (último do período = maior data FIM)
+  const rowMaisRecente = rows.reduce((best, r) => {
+    const d = parseData(c(r, C.FIM));
+    const dBest = parseData(c(best, C.FIM));
+    return (d && dBest && d > dBest) ? r : best;
+  }, rows[0]);
+  merged[C.ACUMULADO] = c(rowMaisRecente, C.ACUMULADO);
+  merged[C.META]      = c(rowMaisRecente, C.META);
+
   return { _row: merged, _tipo: 'merged' };
 }
 
