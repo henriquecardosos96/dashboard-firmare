@@ -873,7 +873,7 @@ function consolidar(rows) {
     C.LEADS_FORA,C.LEADS_INSTA,C.LEADS_WHATS,C.CONV_WHATS,C.CONV_INSTA,
     C.AGENDAMENTOS,C.VENDAS,C.VENDAS_TOTAL,C.CAMPANHAS,C.INVESTIMENTO,
     C.RECEITA,C.DESPESAS,C.META];
-  const MEDIA = [C.TICKET,C.CPL,C.CTR];
+  const MEDIA = [C.CPL,C.CTR];
   const merged = [...rows[0]]; // cópia da primeira linha
   SOMA.forEach(idx => {
     const total = rows.reduce((s, r) => s + (num(c(r, idx)) || 0), 0);
@@ -1127,7 +1127,9 @@ function renderFinanceiro(reg, regAnt, todosConsol, periodoLabel) {
   const resN = recN !== null && despN !== null ? recN - despN : null;
   const vN = num(c(row, C.VENDAS));
   const vtN = num(c(row, C.VENDAS_TOTAL));
-  const tickN = num(c(row, C.TICKET)) || (recN && vN > 0 ? recN / vN : null);
+  // Ticket Médio: sempre recalculado como Receita ÷ Vendas Totais (evita média de médias)
+  const tickRaw = num(c(row, C.TICKET));
+  const tickN = (recN && vtN && vtN > 0) ? recN / vtN : (recN && vN && vN > 0 ? recN / vN : tickRaw);
   const acumN = num(c(row, C.ACUMULADO));
   const metaN = num(c(row, C.META));
   const roiN = despN && despN > 0 && resN !== null ? resN / despN * 100 : null;
